@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аппроксимация данных</title>
+    <style>
+        /* Общие стили */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 30px;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        /* Таблица */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            background: #f9f9f9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #ecf0f1;
+        }
+
+        tr:hover {
+            background-color: #d5eaf0;
+        }
+
+        /* Кнопки */
+        .button-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 10px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #27ae60;
+        }
+
+        .button:active {
+            transform: scale(0.98);
+        }
+
+        /* Результаты вычислений */
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f1f1f1;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .results h3 {
+            color: #34495e;
+        }
+
+        .results p {
+            color: #7f8c8d;
+        }
+
+        /* Графики */
+        .chart-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .chart {
+            width: 100%;
+            max-width: 50%; /* Фиксированная ширина для графиков */
+            height: auto; /* Автоматическая высота для сохранения соотношения сторон */
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Аппроксимация данных</h1>
+        <h2>Таблица данных: {{ name }}</h2>
+
+        <!-- Таблица с исходными данными -->
+        <table>
+            <thead>
+                <tr>
+                    <th>x</th>
+                    <th>y</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for xi, yi in zip_data %}
+                <tr>
+                    <td>{{ xi }}</td>
+                    <td>{{ yi }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Графики -->
+        <div class="chart-container">
+            <img src="data:image/png;base64,{{ plot1 }}" alt="Исходные данные" class="chart">
+            <img src="data:image/png;base64,{{ plot2 }}" alt="Аппроксимация" class="chart">
+        </div>
+
+        <!-- Результаты вычислений -->
+        <div class="results">
+            {% if linear.k is not None and linear.b is not None %}
+                <h3>Линейная функция: y = {{ linear.k }}x + {{ linear.b }}</h3>
+                <p>Сумма квадратов отклонений: {{ linear.ss }}</p>
+            {% endif %}
+
+            {% if quadratic.a is not None and quadratic.b is not None and quadratic.c is not None %}
+                <h3>Квадратичная функция: y = {{ quadratic.a }}x^2 + {{ quadratic.b }}x + {{ quadratic.c }}</h3>
+                <p>Сумма квадратов отклонений: {{ quadratic.ss }}</p>
+            {% endif %}
+
+            {% if hyperbolic.c is not None %}
+                <h3>Гиперболическая функция: y = {{ hyperbolic.c }} / x</h3>
+                <p>Сумма квадратов отклонений: {{ hyperbolic.ss }}</p>
+            {% endif %}
+
+            {% if power.a is not None and power.b is not None %}
+                <h3>Степенная функция: y = {{ power.a }} * x^{{ power.b }}</h3>
+                <p>Сумма квадратов отклонений: {{ power.ss }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Навигация -->
+        <div class="button-container">
+            <a href="?index={{ prev_index }}" class="button">Предыдущая таблица</a>
+            <a href="?index={{ next_index }}" class="button">Следующая таблица</a>
+        </div>
+    </div>
+</body>
+</html>
